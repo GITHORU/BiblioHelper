@@ -94,11 +94,13 @@ Le HTML contient un tableau interactif (tri, filtres par thème, seuil de note, 
 
 ## Exemple de sortie HTML
 
-Un exemple concret de fichier HTML généré par `extract_references.py` (pour un article isolé) est fourni dans le dépôt local :
+Un exemple concret de fichier HTML généré par `extract_references.py` (pour un article isolé) est fourni à la racine du dépôt :
 
-- `Xie et al. - 2023 - Shallow Water Seafloor Geodesy With Wave Glider-Ba_references.html`
+- [`Xie et al. - 2023 - Shallow Water Seafloor Geodesy With Wave Glider-Ba_references.html`](./Xie%20et%20al.%20-%202023%20-%20Shallow%20Water%20Seafloor%20Geodesy%20With%20Wave%20Glider-Ba_references.html)
 
-Ouvre-le dans ton navigateur pour voir à quoi ressemble le tableau interactif (tri par colonnes, filtres, couleurs par thème, etc.).
+**Important** :
+- Depuis GitHub, ce lien affiche le **code source HTML**.
+- Pour voir le tableau **interactif**, il faut **ouvrir le fichier en local dans un navigateur** (après avoir cloné le dépôt ou téléchargé ce fichier), par exemple en double‑cliquant dessus dans l’explorateur de fichiers.
 
 ## Remarques
 
