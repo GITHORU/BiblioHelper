@@ -7,7 +7,6 @@ Petit outil pour extraire et consolider les références bibliographiques d’un
 1. **Découper le PDF long en chunks** (`split_pdf.py`)
 2. **Extraire les références de chaque chunk** (`extract_references.py`)
 3. **Fusionner et dédupliquer les références** (`merge_references.py`)
-4. (Optionnel) **Analyser l’usage des références dans le texte** (`analyze_references.py`)
 
 ---
 
@@ -100,23 +99,6 @@ Un exemple concret de fichier HTML généré par `extract_references.py` (pour u
 - `Xie et al. - 2023 - Shallow Water Seafloor Geodesy With Wave Glider-Ba_references.html`
 
 Ouvre-le dans ton navigateur pour voir à quoi ressemble le tableau interactif (tri par colonnes, filtres, couleurs par thème, etc.).
-
----
-
-## 4. Analyse avancée (optionnelle) – `analyze_references.py`
-
-Ce script est plus expérimental :
-
-- parcourt le texte d’un PDF de thèse,
-- détecte la section **BIBLIOGRAPHIE**,
-- reconstruit les références et essaie de :
-  - trouver où elles sont citées dans le texte,
-  - qualifier le type d’usage (méthode, cadre théorique, comparaison de résultats, etc.),
-  - attribuer une **note d’importance** en fonction du nombre et du contexte des citations.
-
-Il peut être utilisé pour enrichir ou contrôler les notes/thèmes du tableau final.
-
----
 
 ## Remarques
 
