@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Références Bibliographiques</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+        
+        .controls {
+            padding: 20px;
+            background: #f8f9fa;
+            border-bottom: 2px solid #e9ecef;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: center;
+        }
+        
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .control-group label {
+            font-size: 14px;
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        .control-group input,
+        .control-group select {
+            padding: 8px 12px;
+            border: 2px solid #dee2e6;
+            border-radius: 5px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+        
+        .control-group input:focus,
+        .control-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .stats {
+            margin-left: auto;
+            font-size: 14px;
+            color: #6c757d;
+            font-weight: 600;
+        }
+        
+        .table-container {
+            max-height: 70vh;
+            overflow-y: auto;
+            overflow-x: auto;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+        
+        thead {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        
+        th {
+            background: #34495e;
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            cursor: pointer;
+            user-select: none;
+            transition: background-color 0.3s;
+        }
+        
+        th:hover {
+            background: #2c3e50;
+        }
+        
+        th.sortable::after {
+            content: ' ↕';
+            opacity: 0.5;
+            font-size: 0.8em;
+        }
+        
+        th.sort-asc::after {
+            content: ' ↑';
+            opacity: 1;
+        }
+        
+        th.sort-desc::after {
+            content: ' ↓';
+            opacity: 1;
+        }
+        
+        td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #e9ecef;
+            vertical-align: top;
+        }
+        
+        tr:hover {
+            background-color: #f8f9fa;
+        }
+        
+        tr.hidden {
+            display: none;
+        }
+        
+        a {
+            color: #667eea;
+            text-decoration: none;
+            word-break: break-all;
+        }
+        
+        a:hover {
+            text-decoration: underline;
+        }
+        
+        .legend {
+            padding: 20px;
+            background: #f8f9fa;
+            border-top: 2px solid #e9ecef;
+        }
+        
+        .legend h3 {
+            font-size: 2em;
+            margin-bottom: 15px;
+            color: #495057;
+        }
+        
+        .legend-items {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.9em;
+        }
+        
+        .legend-color {
+            width: 30px;
+            height: 20px;
+            border-radius: 4px;
+            border: 1px solid #dee2e6;
+        }
+        
+            .theme-Applications_et__tudes_de_cas { background-color: #e8f4f8; }
+    .theme-G_od_sie_des_fonds_marins { background-color: #fff4e6; }
+    .theme-Instruments_et_techniques_de_mesure { background-color: #f0f8e8; }
+    .theme-M_thodes_GNSS_Acoustic { background-color: #f8e8f0; }
+    .theme-Optimisation_et_traitement_de_donn_es { background-color: #e8f0f8; }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Références Bibliographiques</h1>
+            <p>Tableau interactif avec tri et filtrage</p>
+        </div>
+        
+        <div class="controls">
+            <div class="control-group">
+                <label for="themeFilter">Filtrer par thème:</label>
+                <select id="themeFilter">
+                    <option value="">Tous les thèmes</option>
+                    <option value="Applications et études de cas">Applications et études de cas</option>
+                    <option value="Géodésie des fonds marins">Géodésie des fonds marins</option>
+                    <option value="Instruments et techniques de mesure">Instruments et techniques de mesure</option>
+                    <option value="Méthodes GNSS-Acoustic">Méthodes GNSS-Acoustic</option>
+                    <option value="Optimisation et traitement de données">Optimisation et traitement de données</option>
+                </select>
+            </div>
+            
+            <div class="control-group">
+                <label for="importanceFilter">Note min:</label>
+                <input type="number" id="importanceFilter" min="0" max="100" value="0">
+            </div>
+            
+            <div class="control-group">
+                <label for="searchBox">Rechercher:</label>
+                <input type="text" id="searchBox" placeholder="Texte à rechercher...">
+            </div>
+            
+            <div class="stats">
+                <span id="statsText">0 référence(s) affichée(s)</span>
+            </div>
+        </div>
+        
+        <div class="table-container">
+            <table id="referencesTable">
+                <thead>
+                    <tr>
+                        <th class="sortable" onclick="sortTable(0)">Référence</th>
+                        <th class="sortable" onclick="sortTable(1)">Thème</th>
+                        <th class="sortable" onclick="sortTable(2)">Arguments étayés</th>
+                        <th class="sortable" onclick="sortTable(3)">Note d'importance</th>
+                        <th class="sortable" onclick="sortTable(4)">Année</th>
+                        <th class="sortable" onclick="sortTable(5)">Lien web</th>
+                    </tr>
+                </thead>
+                <tbody>
+        <tr class="theme-Applications_et__tudes_de_cas">
+            <td>Blum et al. (2010) - Assessing slope stability in the Santa Barbara Basin, California, using seafloor geodesy and CHIRP seismic data</td>
+            <td>Applications et études de cas</td>
+            <td>Utilisée pour illustrer que la géodésie sous-marine a déjà été appliquée à l’étude de la stabilité de pentes sous-marines, montrant que les méthodes géodésiques au fond de la mer permettent de quantifier des risques géologiques, contexte dans lequel la méthode GNSS-A proposée peut aussi être utile.</td>
+            <td data-importance="30">30</td>
+            <td data-year="2010">2010</td>
+            <td><a href="https://doi.org/10.1029/2010gl043293" target="_blank">https://doi.org/10.1029/2010gl043293</a></td>
+        </tr>
+        <tr class="theme-Applications_et__tudes_de_cas">
+            <td>McGuire &amp; Collins (2013) - Millimeter-level precision in a seafloor geodesy experiment at the Discovery transform fault, East Pacific Rise</td>
+            <td>Applications et études de cas</td>
+            <td>Sert à démontrer que des expériences de géodésie sous-marine peuvent atteindre une précision millimétrique, ce qui place la répétabilité centimétrique obtenue ici avec un seul transpondeur en eaux peu profondes dans un cadre de haute performance.</td>
+            <td data-importance="40">40</td>
+            <td data-year="2013">2013</td>
+            <td><a href="https://doi.org/10.1002/ggge.20225" target="_blank">https://doi.org/10.1002/ggge.20225</a></td>
+        </tr>
+        <tr class="theme-Applications_et__tudes_de_cas">
+            <td>De Martino et al. (2014) - A first GPS measurement of vertical seafloor displacement in the Campi Flegrei caldera (Italy)</td>
+            <td>Applications et études de cas</td>
+            <td>Appuie la discussion sur les systèmes à spar-buoy en montrant une application réelle de géodésie GPS flottante, que l’article compare implicitement à l’option Wave Glider pour souligner les avantages de ce dernier en eaux peu profondes.</td>
+            <td data-importance="45">45</td>
+            <td data-year="2014">2014</td>
+            <td><a href="https://doi.org/10.1016/j.jvolgeores.2014.03.003" target="_blank">https://doi.org/10.1016/j.jvolgeores.2014.03.003</a></td>
+        </tr>
+        <tr class="theme-Applications_et__tudes_de_cas">
+            <td>Tomita et al. (2017) - Along-trench variation in seafloor displacements after the 2011 Tohoku earthquake</td>
+            <td>Applications et études de cas</td>
+            <td>Illustré pour montrer que les réseaux GNSS-A en eaux profondes ont permis de cartographier les déplacements de fond après un séisme majeur, ce qui met en perspective l’intérêt de stations GNSS-A peu profondes et peu coûteuses pour d’autres marges.</td>
+            <td data-importance="60">60</td>
+            <td data-year="2017">2017</td>
+            <td><a href="https://doi.org/10.1126/sciadv.1700113" target="_blank">https://doi.org/10.1126/sciadv.1700113</a></td>
+        </tr>
+        <tr class="theme-Applications_et__tudes_de_cas">
+            <td>Xie et al. (2019) - Seafloor geodesy in shallow water with GPS on an anchored spar buoy</td>
+            <td>Applications et études de cas</td>
+            <td>Sert de précédent direct pour la géodésie en eaux peu profondes, contre lequel l’étude compare l’approche Wave Glider à un seul transpondeur afin de montrer que l’on peut atteindre une précision centimétrique avec une configuration plus flexible.</td>
+            <td data-importance="85">85</td>
+            <td data-year="2019">2019</td>
+            <td><a href="https://doi.org/10.1029/2019jb018242" target="_blank">https://doi.org/10.1029/2019jb018242</a></td>
+        </tr>
+        <tr class="theme-Applications_et__tudes_de_cas">
+            <td>Yokota &amp; Ishikawa (2020) - Shallow slow slip events along the Nankai Trough detected by GNSS-A</td>
+            <td>Applications et études de cas</td>
+            <td>Montre que GNSS-A peut détecter des glissements lents peu profonds le long de zones de subduction, renforçant l’argument que des stations GNSS-A en eaux peu profondes comme celles testées ici sont pertinentes pour la surveillance des marges actives.</td>
+            <td data-importance="70">70</td>
+            <td data-year="2020">2020</td>
+            <td><a href="https://doi.org/10.1126/sciadv.aay5786" target="_blank">https://doi.org/10.1126/sciadv.aay5786</a></td>
+        </tr>
+        <tr class="theme-Applications_et__tudes_de_cas">
+            <td>Brooks et al. (2023) - Rapid shallow megathrust afterslip from the 2021 M8.2 Chignik, Alaska earthquake revealed by seafloor geodesy</td>
+            <td>Applications et études de cas</td>
+            <td>Sert d’exemple récent montrant que la géodésie sous-marine permet de détecter des glissements post-sismiques peu profonds, renforçant l’argument que des réseaux GNSS-A plus abordables, y compris en eaux peu profondes, sont stratégiquement importants.</td>
+            <td data-importance="55">55</td>
+            <td data-year="2023">2023</td>
+            <td><a href="https://doi.org/10.1126/sciadv.adf9299" target="_blank">https://doi.org/10.1126/sciadv.adf9299</a></td>
+        </tr>
+        <tr class="theme-G_od_sie_des_fonds_marins">
+            <td>Dixon (1991) - An introduction to the Global Positioning System and some geological applications</td>
+            <td>Géodésie des fonds marins</td>
+            <td>Utilisé pour présenter le rôle des GNSS dans la mesure des déformations de surface, contextualisant le fait que les techniques spatiales terrestres ne couvrent pas le plancher océanique et motivent le recours au GNSS-A.</td>
+            <td data-importance="40">40</td>
+            <td data-year="1991">1991</td>
+            <td><a href="https://doi.org/10.1029/91rg00152" target="_blank">https://doi.org/10.1029/91rg00152</a></td>
+        </tr>
+        <tr class="theme-G_od_sie_des_fonds_marins">
+            <td>Segall &amp; Davis (1997) - GPS applications for geodynamics and earthquake studies</td>
+            <td>Géodésie des fonds marins</td>
+            <td>Fournit un contexte sur les applications géodynamiques des GPS pour les études sismotectoniques, renforçant le contraste entre la couverture terrestre bien instrumentée et les zones sous-marines mal couvertes que GNSS-A tente d’adresser.</td>
+            <td data-importance="35">35</td>
+            <td data-year="1997">1997</td>
+            <td><a href="https://doi.org/10.1146/annurev.earth.25.1.301" target="_blank">https://doi.org/10.1146/annurev.earth.25.1.301</a></td>
+        </tr>
+        <tr class="theme-G_od_sie_des_fonds_marins">
+            <td>Bürgmann &amp; Chadwell (2014) - Seafloor geodesy</td>
+            <td>Géodésie des fonds marins</td>
+            <td>Fournit le cadre général sur l’état de l’art en géodésie des fonds marins, que les auteurs utilisent pour motiver la nécessité d’étendre la couverture géodésique au plancher océanique, en particulier là où les techniques spatiales classiques ne fonctionnent pas.</td>
+            <td data-importance="70">70</td>
+            <td data-year="2014">2014</td>
+            <td><a href="https://doi.org/10.1146/annurev-earth-060313-054953" target="_blank">https://doi.org/10.1146/annurev-earth-060313-054953</a></td>
+        </tr>
+        <tr class="theme-G_od_sie_des_fonds_marins">
+            <td>Herring et al. (2016) - Plate boundary observatory and related networks: GPS data analysis methods and geodetic products</td>
+            <td>Géodésie des fonds marins</td>
+            <td>Sert à illustrer la maturité des réseaux GNSS continentaux et de leurs produits, par contraste avec le manque de couverture géodésique sur le plancher océanique que l’étude GNSS-A en eaux peu profondes cherche à combler.</td>
+            <td data-importance="35">35</td>
+            <td data-year="2016">2016</td>
+            <td><a href="https://doi.org/10.1002/2016rg000529" target="_blank">https://doi.org/10.1002/2016rg000529</a></td>
+        </tr>
+        <tr class="theme-G_od_sie_des_fonds_marins">
+            <td>Evans et al. (2022) - Imaging the next Cascadia earthquake: Optimal design for a seafloor GNSS-A network</td>
+            <td>Géodésie des fonds marins</td>
+            <td>Sert à montrer que la conception optimale de réseaux GNSS-A est un sujet actif pour surveiller de futures ruptures sismiques majeures, renforçant la motivation pour des solutions GNSS-A moins coûteuses comme celles testées en eaux peu profondes.</td>
+            <td data-importance="50">50</td>
+            <td data-year="2022">2022</td>
+            <td><a href="https://doi.org/10.1093/gji/ggab360" target="_blank">https://doi.org/10.1093/gji/ggab360</a></td>
+        </tr>
+        <tr class="theme-Instruments_et_techniques_de_mesure">
+            <td>Del Grosso (1974) - New equation for the speed of sound in natural waters (with comparisons to other equations)</td>
+            <td>Instruments et techniques de mesure</td>
+            <td>Fournit l’équation utilisée pour convertir les profils de température et salinité en vitesse du son, supportant le calcul des profils de vitesse et donc toute l’analyse des biais de distance et de position dus aux erreurs de modèle de vitesse du son.</td>
+            <td data-importance="80">80</td>
+            <td data-year="1974">1974</td>
+            <td><a href="https://doi.org/10.1121/1.1903388" target="_blank">https://doi.org/10.1121/1.1903388</a></td>
+        </tr>
+        <tr class="theme-Instruments_et_techniques_de_mesure">
+            <td>Davis et al. (1992) - CORK: A hydrologic seal and downhole observatory for deep-ocean boreholes</td>
+            <td>Instruments et techniques de mesure</td>
+            <td>Sert d’exemple de dispositif d’observatoire en forage profond, mentionné dans l’introduction pour montrer la diversité des architectures instrumentales possibles pour la géodésie sous-marine en complément de GNSS-A.</td>
+            <td data-importance="25">25</td>
+            <td data-year="1992">1992</td>
+            <td></td>
+        </tr>
+        <tr class="theme-Instruments_et_techniques_de_mesure">
+            <td>Sasagawa &amp; Zumberge (2013) - A self-calibrating pressure recorder for detecting seafloor height change</td>
+            <td>Instruments et techniques de mesure</td>
+            <td>Sert à documenter une technologie de pression auto-étalonnée permettant de suivre les variations de hauteur du fond marin, mentionnée comme l’un des capteurs complémentaires au transpondeur GNSS-A dans l’expérience décrite.</td>
+            <td data-importance="60">60</td>
+            <td data-year="2013">2013</td>
+            <td><a href="https://doi.org/10.1109/joe.2012.2233312" target="_blank">https://doi.org/10.1109/joe.2012.2233312</a></td>
+        </tr>
+        <tr class="theme-Instruments_et_techniques_de_mesure">
+            <td>Locarnini et al. (2018) - World ocean atlas 2018, volume 1: Temperature</td>
+            <td>Instruments et techniques de mesure</td>
+            <td>Fournit les champs de température de l’Atlas WOA2018 utilisés pour générer les profils de vitesse du son dans les simulations et l’analyse, ce qui soutient la modélisation des biais de distance liés à la stratification thermique.</td>
+            <td data-importance="80">80</td>
+            <td data-year="2018">2018</td>
+            <td><a href="http://www.nodc.noaa.gov/OC5/indprod.html" target="_blank">http://www.nodc.noaa.gov/OC5/indprod.html</a></td>
+        </tr>
+        <tr class="theme-Instruments_et_techniques_de_mesure">
+            <td>Zumberge et al. (2018) - Measuring seafloor strain with an optical fiber interferometer</td>
+            <td>Instruments et techniques de mesure</td>
+            <td>Cité pour présenter une autre technologie de mesure géodésique (interférométrie optique de fibre) au fond marin, soulignant que GNSS-A à un transpondeur s’inscrit dans un ensemble plus large d’instruments possibles.</td>
+            <td data-importance="45">45</td>
+            <td data-year="2018">2018</td>
+            <td><a href="https://doi.org/10.1029/2018ea000418" target="_blank">https://doi.org/10.1029/2018ea000418</a></td>
+        </tr>
+        <tr class="theme-Instruments_et_techniques_de_mesure">
+            <td>Zweng et al. (2018) - World ocean atlas 2018, volume 2: Salinity</td>
+            <td>Instruments et techniques de mesure</td>
+            <td>Fournit les champs de salinité de WOA2018 combinés avec la température pour dériver les profils de vitesse du son, base de la modélisation des trajectoires acoustiques et des biais de distance dans les simulations GNSS-A.</td>
+            <td data-importance="80">80</td>
+            <td data-year="2018">2018</td>
+            <td><a href="http://www.nodc.noaa.gov/OC5/indprod.html" target="_blank">http://www.nodc.noaa.gov/OC5/indprod.html</a></td>
+        </tr>
+        <tr class="theme-Instruments_et_techniques_de_mesure">
+            <td>Iinuma et al. (2021) - GNSS-acoustic observations of seafloor crustal deformation using a wave glider</td>
+            <td>Instruments et techniques de mesure</td>
+            <td>Appuie directement le choix d’utiliser un Wave Glider en montrant que des observations GNSS-A avec ce type de plateforme sont déjà réalisables, et sert de précédent pour la conception de trajectoires de surface autonomes.</td>
+            <td data-importance="75">75</td>
+            <td data-year="2021">2021</td>
+            <td></td>
+        </tr>
+        <tr class="theme-Instruments_et_techniques_de_mesure">
+            <td>Sakic et al. (2021) - Geodetic seafloor positioning using an unmanned surface vehicle—Contribution of direction-of-arrival observations</td>
+            <td>Instruments et techniques de mesure</td>
+            <td>Appuie la discussion sur les véhicules de surface autonomes en montrant que des USV peuvent fournir une géométrie d’observation favorable pour la géodésie sous-marine, ce qui renforce la pertinence de la configuration Wave Glider utilisée.</td>
+            <td data-importance="70">70</td>
+            <td data-year="2021">2021</td>
+            <td><a href="https://doi.org/10.3389/feart.2021.636156" target="_blank">https://doi.org/10.3389/feart.2021.636156</a></td>
+        </tr>
+        <tr class="theme-Instruments_et_techniques_de_mesure">
+            <td>Wilcock et al. (2021) - A thirty-month seafloor test of the A-0-A method for calibrating pressure gauges</td>
+            <td>Instruments et techniques de mesure</td>
+            <td>Cité pour montrer qu’il existe des protocoles de calibration longue durée des jauges de pression au fond marin, renforçant la crédibilité de l’utilisation conjointe de mesures de pression et GNSS-A dans le suivi de la déformation.</td>
+            <td data-importance="40">40</td>
+            <td data-year="2021">2021</td>
+            <td><a href="https://doi.org/10.3389/feart.2020.600671" target="_blank">https://doi.org/10.3389/feart.2020.600671</a></td>
+        </tr>
+        <tr class="theme-Instruments_et_techniques_de_mesure">
+            <td>Cook et al. (2023) - Calibrated absolute seafloor pressure measurements for geodesy in Cascadia</td>
+            <td>Instruments et techniques de mesure</td>
+            <td>Cité pour illustrer les progrès récents des mesures de pression absolue au fond marin en tant qu’approche géodésique alternative, ce qui situe la méthode GNSS-A proposée parmi d’autres outils pour surveiller la déformation en mer.</td>
+            <td data-importance="40">40</td>
+            <td data-year="2023">2023</td>
+            <td><a href="https://doi.org/10.1029/2023jb026413" target="_blank">https://doi.org/10.1029/2023jb026413</a></td>
+        </tr>
+        <tr class="theme-Instruments_et_techniques_de_mesure">
+            <td>Sasagawa et al. (2023) - Drift corrected seafloor pressure observations of vertical deformation at axial seamount 2018–2021</td>
+            <td>Instruments et techniques de mesure</td>
+            <td>Utilisée pour illustrer que des corrections de dérive sur les enregistrements de pression de fond permettent de mesurer les déformations verticales, mettant en parallèle la sensibilité verticale limitée du GNSS-A à un seul transpondeur discutée dans l’article.</td>
+            <td data-importance="35">35</td>
+            <td data-year="2023">2023</td>
+            <td><a href="https://doi.org/10.1029/2022ea002434" target="_blank">https://doi.org/10.1029/2022ea002434</a></td>
+        </tr>
+        <tr class="theme-M_thodes_GNSS_Acoustic">
+            <td>Spiess (1985) - Suboceanic geodetic measurements</td>
+            <td>Méthodes GNSS-Acoustic</td>
+            <td>Sert de référence fondatrice pour le concept GNSS-A avec réseau de transpondeurs symétriques, et supporte directement l’argument clé de l’article selon lequel une géométrie symétrique permet de découpler les erreurs de vitesse du son de la position horizontale.</td>
+            <td data-importance="95">95</td>
+            <td data-year="1985">1985</td>
+            <td><a href="https://doi.org/10.1109/tgrs.1985.289441" target="_blank">https://doi.org/10.1109/tgrs.1985.289441</a></td>
+        </tr>
+        <tr class="theme-M_thodes_GNSS_Acoustic">
+            <td>Spiess et al. (1998) - Precise GPS/Acoustic positioning of seafloor reference points for tectonic studies</td>
+            <td>Méthodes GNSS-Acoustic</td>
+            <td>Appuie la démonstration que les systèmes GPS/acoustiques multi-transpondeurs peuvent fournir des points de référence tectoniques précis au fond de la mer, servant de comparaison avec l’approche « station unique » étudiée ici.</td>
+            <td data-importance="80">80</td>
+            <td data-year="1998">1998</td>
+            <td><a href="https://doi.org/10.1016/s0031-9201(98)00089-2" target="_blank">https://doi.org/10.1016/s0031-9201(98)00089-2</a></td>
+        </tr>
+        <tr class="theme-M_thodes_GNSS_Acoustic">
+            <td>Yamada et al. (2002) - Error evaluation in acoustic positioning of a single transponder for seafloor crustal deformation measurements</td>
+            <td>Méthodes GNSS-Acoustic</td>
+            <td>Directement mobilisée pour évaluer les sources d’erreurs propres au positionnement acoustique d’un seul transpondeur, fournissant un cadre de comparaison pour les biais de vitesse du son et de géométrie étudiés dans l’article.</td>
+            <td data-importance="85">85</td>
+            <td data-year="2002">2002</td>
+            <td><a href="https://doi.org/10.1186/bf03352435" target="_blank">https://doi.org/10.1186/bf03352435</a></td>
+        </tr>
+        <tr class="theme-M_thodes_GNSS_Acoustic">
+            <td>Gagnon et al. (2005) - Measuring the onset of locking in the Peru–Chile trench with GPS and acoustic measurements</td>
+            <td>Méthodes GNSS-Acoustic</td>
+            <td>Fournit un exemple emblématique de mesures conjointes GPS-acoustiques en zone de subduction profonde, utilisé pour montrer que les réseaux GNSS-A multi-transpondeurs ont déjà prouvé leur capacité à suivre le couplage sismique.</td>
+            <td data-importance="65">65</td>
+            <td data-year="2005">2005</td>
+            <td><a href="https://doi.org/10.1038/nature03412" target="_blank">https://doi.org/10.1038/nature03412</a></td>
+        </tr>
+        <tr class="theme-M_thodes_GNSS_Acoustic">
+            <td>Gagnon (2007) - Seafloor geodetic measurements and modeling of Nazca-South America plate convergence</td>
+            <td>Méthodes GNSS-Acoustic</td>
+            <td>Sert de référence de fond sur les mesures géodésiques au fond de la mer et la modélisation des convergences de plaques, soutenant l’affirmation que les configurations GNSS-A classiques se focalisent sur les marges profondes avec des réseaux coûteux.</td>
+            <td data-importance="50">50</td>
+            <td data-year="2007">2007</td>
+            <td></td>
+        </tr>
+        <tr class="theme-M_thodes_GNSS_Acoustic">
+            <td>Chadwell &amp; Spiess (2008) - Plate motion at the ridge-transform boundary of the south Cleft segment of the Juan de Fuca Ridge from GPS-Acoustic data</td>
+            <td>Méthodes GNSS-Acoustic</td>
+            <td>Servez d’exemple de réussite des mesures GNSS-A en eaux profondes pour des études de cinématique de plaques, ce qui souligne que la méthode GNSS-A est déjà capable de précision centimétrique et que l’article vise à étendre cette capacité aux eaux peu profondes avec un seul transpondeur.</td>
+            <td data-importance="60">60</td>
+            <td data-year="2008">2008</td>
+            <td><a href="https://doi.org/10.1029/2007jb004936" target="_blank">https://doi.org/10.1029/2007jb004936</a></td>
+        </tr>
+        <tr class="theme-M_thodes_GNSS_Acoustic">
+            <td>Chadwell &amp; Sweeney (2010) - Acoustic ray-trace equations for seafloor geodesy</td>
+            <td>Méthodes GNSS-Acoustic</td>
+            <td>Référence théorique pour la modélisation détaillée des trajets acoustiques, utilisée pour mettre en perspective le choix méthodologique de l’article d’utiliser une approximation en rayon droit (slant) en eaux peu profondes plutôt qu’un tracé de rayons complet.</td>
+            <td data-importance="65">65</td>
+            <td data-year="2010">2010</td>
+            <td><a href="https://doi.org/10.1080/01490419.2010.492283" target="_blank">https://doi.org/10.1080/01490419.2010.492283</a></td>
+        </tr>
+        <tr class="theme-M_thodes_GNSS_Acoustic">
+            <td>Petersen et al. (2019) - Measuring tectonic seafloor deformation and strain-build up with acoustic direct-path ranging</td>
+            <td>Méthodes GNSS-Acoustic</td>
+            <td>Utilisée pour illustrer les méthodes alternatives de télémétrie acoustique directe pour mesurer la déformation du plancher océanique, que les auteurs citent pour situer GNSS-A parmi d’autres approches acoustiques.</td>
+            <td data-importance="45">45</td>
+            <td data-year="2019">2019</td>
+            <td><a href="https://doi.org/10.1016/j.jog.2019.01.002" target="_blank">https://doi.org/10.1016/j.jog.2019.01.002</a></td>
+        </tr>
+        <tr class="theme-M_thodes_GNSS_Acoustic">
+            <td>Watanabe et al. (2020) - GARPOS: Analysis software for the GNSS-A seafloor positioning with simultaneous estimation of sound speed structure</td>
+            <td>Méthodes GNSS-Acoustic</td>
+            <td>Sert de référence pour des méthodes d’analyse GNSS-A qui estiment simultanément la structure de vitesse du son, permettant de comparer ces approches plus complexes au choix de l’article de fixer ou de paramétrer simplement la vitesse moyenne.</td>
+            <td data-importance="70">70</td>
+            <td data-year="2020">2020</td>
+            <td><a href="https://doi.org/10.3389/feart.2020.597532" target="_blank">https://doi.org/10.3389/feart.2020.597532</a></td>
+        </tr>
+        <tr class="theme-Optimisation_et_traitement_de_donn_es">
+            <td>Fréville (2004) - The multidimensional 0–1 knapsack problem: An overview</td>
+            <td>Optimisation et traitement de données</td>
+            <td>Justifie le fait que la sélection d’un sous-ensemble de mesures pour maximiser la symétrie de la matrice de Fisher peut être formulée comme un problème de sac à dos 0/1 multidimensionnel, cadrant théoriquement la procédure d’optimisation testée par les auteurs.</td>
+            <td data-importance="50">50</td>
+            <td data-year="2004">2004</td>
+            <td><a href="https://doi.org/10.1016/s0377-2217(03)00274-1" target="_blank">https://doi.org/10.1016/s0377-2217(03)00274-1</a></td>
+        </tr>
+        <tr class="theme-Optimisation_et_traitement_de_donn_es">
+            <td>Genrich &amp; Bock (2006) - Instantaneous geodetic positioning with 10–50 Hz GPS measurements: Noise characteristics and implications for monitoring networks</td>
+            <td>Optimisation et traitement de données</td>
+            <td>Appuie l’approximation des auteurs qui modélisent le bruit GNSS comme blanc dans les simulations, en se basant sur la caractérisation des bruits haute fréquence dans les séries GPS.</td>
+            <td data-importance="45">45</td>
+            <td data-year="2006">2006</td>
+            <td><a href="https://doi.org/10.1029/2005jb003617" target="_blank">https://doi.org/10.1029/2005jb003617</a></td>
+        </tr>
+        <tr class="theme-Optimisation_et_traitement_de_donn_es">
+            <td>Xue &amp; Yang (2015) - Positioning configurations with the lowest GDOP and their classification</td>
+            <td>Optimisation et traitement de données</td>
+            <td>Appuie la discussion sur l’importance d’une géométrie d’observation bien conditionnée (faible GDOP) et justifie l’analyse de la matrice de Fisher pour concevoir des trajectoires quasi symétriques autour du transpondeur.</td>
+            <td data-importance="75">75</td>
+            <td data-year="2015">2015</td>
+            <td><a href="https://doi.org/10.1007/s00190-014-0760-6" target="_blank">https://doi.org/10.1007/s00190-014-0760-6</a></td>
+        </tr>
+        <tr class="theme-Optimisation_et_traitement_de_donn_es">
+            <td>Beal et al. (2018) - Gekko optimization suite</td>
+            <td>Optimisation et traitement de données</td>
+            <td>Sert à justifier l’utilisation d’un solveur d’optimisation (Gekko) pour sélectionner un sous-ensemble de mesures rendant la matrice d’information de Fisher plus diagonale et les observations plus « symétriques » dans les simulations et l’analyse des données réelles.</td>
+            <td data-importance="35">35</td>
+            <td data-year="2018">2018</td>
+            <td><a href="https://doi.org/10.3390/pr6080106" target="_blank">https://doi.org/10.3390/pr6080106</a></td>
+        </tr>
+        <tr class="theme-Optimisation_et_traitement_de_donn_es">
+            <td>Chen et al. (2020) - Improving GNSS-acoustic positioning by optimizing the ship’s track lines and observation combinations</td>
+            <td>Optimisation et traitement de données</td>
+            <td>Appuie l’hypothèse centrale selon laquelle la géométrie de trajectoire et la combinaison d’observations peuvent être optimisées (via la matrice d’information) pour améliorer la précision des positions GNSS-A, principe repris pour concevoir les trajectoires circulaires et quasi symétriques autour du transpondeur.</td>
+            <td data-importance="85">85</td>
+            <td data-year="2020">2020</td>
+            <td><a href="https://doi.org/10.1007/s00190-020-01389-1" target="_blank">https://doi.org/10.1007/s00190-020-01389-1</a></td>
+        </tr>
+        <tr class="theme-Optimisation_et_traitement_de_donn_es">
+            <td>Xie (2023) - suruixie/sfg_gnssa_sw: v1.0.0</td>
+            <td>Optimisation et traitement de données</td>
+            <td>Fournit le dépôt de données et de codes utilisé pour les simulations et l’inversion GNSS-A, soutenant la reproductibilité des algorithmes de traitement et des expériences numériques présentés.</td>
+            <td data-importance="30">30</td>
+            <td data-year="2023">2023</td>
+            <td><a href="https://doi.org/10.5281/zenodo.8184927" target="_blank">https://doi.org/10.5281/zenodo.8184927</a></td>
+        </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="legend">
+            <h3>Légende des thèmes</h3>
+            <div class="legend-items">
+                <div class="legend-item">
+                    <div class="legend-color theme-Applications_et__tudes_de_cas"></div>
+                    <span>Applications et études de cas</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color theme-G_od_sie_des_fonds_marins"></div>
+                    <span>Géodésie des fonds marins</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color theme-Instruments_et_techniques_de_mesure"></div>
+                    <span>Instruments et techniques de mesure</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color theme-M_thodes_GNSS_Acoustic"></div>
+                    <span>Méthodes GNSS-Acoustic</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color theme-Optimisation_et_traitement_de_donn_es"></div>
+                    <span>Optimisation et traitement de données</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const THEME_COL_INDEX = 1;
+        const themeColors = { "Applications et études de cas": "#e8f4f8", "Géodésie des fonds marins": "#fff4e6", "Instruments et techniques de mesure": "#f0f8e8", "Méthodes GNSS-Acoustic": "#f8e8f0", "Optimisation et traitement de données": "#e8f0f8" };
+
+        let currentSort = { column: -1, direction: 'asc' };
+        let allRows = Array.from(document.querySelectorAll('#referencesTable tbody tr'));
+        
+        function updateStats() {
+            const visibleRows = allRows.filter(row => !row.classList.contains('hidden'));
+            document.getElementById('statsText').textContent = `${visibleRows.length} référence(s) affichée(s)`;
+        }
+        
+        function sortTable(columnIndex) {
+            const tbody = document.querySelector('#referencesTable tbody');
+            const rows = Array.from(tbody.querySelectorAll('tr'));
+            
+            // Déterminer la direction de tri
+            if (currentSort.column === columnIndex) {
+                currentSort.direction = currentSort.direction === 'asc' ? 'desc' : 'asc';
+            } else {
+                currentSort.column = columnIndex;
+                currentSort.direction = 'asc';
+            }
+            
+            // Mettre à jour les indicateurs visuels
+            document.querySelectorAll('th').forEach((th, idx) => {
+                th.classList.remove('sort-asc', 'sort-desc');
+                if (idx === columnIndex) {
+                    th.classList.add(`sort-${currentSort.direction}`);
+                }
+            });
+            
+            // Trier les lignes
+            rows.sort((a, b) => {
+                const aCell = a.cells[columnIndex]?.textContent.trim() || '';
+                const bCell = b.cells[columnIndex]?.textContent.trim() || '';
+                
+                // Essayer de parser comme nombre (pour Note d'importance, Année)
+                const aNum = parseFloat(aCell);
+                const bNum = parseFloat(bCell);
+                
+                if (!isNaN(aNum) && !isNaN(bNum)) {
+                    return currentSort.direction === 'asc' ? aNum - bNum : bNum - aNum;
+                }
+                
+                // Sinon, tri alphabétique
+                return currentSort.direction === 'asc' 
+                    ? aCell.localeCompare(bCell, 'fr', { numeric: true })
+                    : bCell.localeCompare(aCell, 'fr', { numeric: true });
+            });
+            
+            // Réorganiser les lignes dans le DOM
+            rows.forEach(row => tbody.appendChild(row));
+            updateStats();
+            applyCellColors(); // Réappliquer les couleurs après le tri
+        }
+        
+        function filterTable() {
+            const themeFilter = document.getElementById('themeFilter').value;
+            const importanceFilter = parseInt(document.getElementById('importanceFilter').value) || 0;
+            const searchText = document.getElementById('searchBox').value.toLowerCase();
+            
+            // Trouver les indices des colonnes
+            const headers = Array.from(document.querySelectorAll('#referencesTable thead th'));
+            const themeHeaderIndex = headers.findIndex(th => th.textContent.includes('Thème'));
+            const importanceHeaderIndex = headers.findIndex(th => th.textContent.includes('Note') || th.textContent.includes('importance'));
+            
+            allRows.forEach(row => {
+                let show = true;
+                
+                // Filtre par thème
+                if (themeFilter && themeHeaderIndex >= 0) {
+                    const themeCell = row.cells[themeHeaderIndex]?.textContent.trim() || '';
+                    if (themeCell !== themeFilter) {
+                        show = false;
+                    }
+                }
+                
+                // Filtre par note d'importance
+                if (show && importanceHeaderIndex >= 0) {
+                    const importanceCell = row.cells[importanceHeaderIndex]?.textContent.trim() || '';
+                    const importance = parseInt(importanceCell) || 0;
+                    if (importance < importanceFilter) {
+                        show = false;
+                    }
+                }
+                
+                // Filtre par recherche textuelle
+                if (show && searchText) {
+                    const rowText = Array.from(row.cells).map(cell => cell.textContent).join(' ').toLowerCase();
+                    if (!rowText.includes(searchText)) {
+                        show = false;
+                    }
+                }
+                
+                if (show) {
+                    row.classList.remove('hidden');
+                } else {
+                    row.classList.add('hidden');
+                }
+            });
+            
+            updateStats();
+            applyCellColors(); // Réappliquer les couleurs après le filtrage
+        }
+        
+        // Fonction pour calculer la couleur d'une note (rouge -> vert)
+        function getImportanceColor(value) {
+            // Normaliser entre 0 et 100
+            const normalized = Math.max(0, Math.min(100, value)) / 100;
+            // Rouge (faible) -> Vert (élevé)
+            const red = Math.round(255 * (1 - normalized));
+            const green = Math.round(255 * normalized);
+            const blue = 0;
+            return `rgb(${red}, ${green}, ${blue})`;
+        }
+        
+        // Fonction pour calculer la couleur d'une année (violet -> jaune)
+        function getYearColor(year) {
+            // Trouver les années min et max dans le tableau
+            const yearCells = Array.from(document.querySelectorAll('td[data-year]'));
+            const years = yearCells.map(cell => parseInt(cell.getAttribute('data-year'))).filter(y => !isNaN(y));
+            if (years.length === 0) return 'rgb(128, 0, 128)'; // Violet par défaut
+            
+            const minYear = Math.min(...years);
+            const maxYear = Math.max(...years);
+            
+            if (minYear === maxYear) return 'rgb(255, 255, 0)'; // Jaune si une seule année
+            
+            // Normaliser entre 0 et 1
+            const normalized = (year - minYear) / (maxYear - minYear);
+            
+            // Violet (ancien) -> Jaune (récent)
+            // Violet: rgb(128, 0, 128), Jaune: rgb(255, 255, 0)
+            const red = Math.round(128 + (255 - 128) * normalized);
+            const green = Math.round(0 + 255 * normalized);
+            const blue = Math.round(128 * (1 - normalized));
+            return `rgb(${red}, ${green}, ${blue})`;
+        }
+        
+        // Appliquer les couleurs aux cellules
+        function applyCellColors() {
+            // Pré-calcul des indices de colonnes Référence / Thème / Arguments
+            const headerCells = Array.from(document.querySelectorAll('#referencesTable thead th'));
+            const refColIndex = headerCells.findIndex(th => th.textContent.includes('Référence'));
+            const themeColIndex = headerCells.findIndex(th => th.textContent.includes('Thème'));
+            const argsColIndex = headerCells.findIndex(th => th.textContent.includes('Arguments étayés'));
+            
+            // Couleurs pour les notes d'importance
+            document.querySelectorAll('td[data-importance]').forEach(cell => {
+                const importance = parseInt(cell.getAttribute('data-importance'));
+                if (!isNaN(importance)) {
+                    const color = getImportanceColor(importance);
+                    cell.style.backgroundColor = color;
+                    cell.style.color = importance < 50 ? 'white' : 'black'; // Texte blanc si fond sombre
+                    cell.style.fontWeight = 'bold';
+                }
+            });
+            
+            // Couleurs pour les années
+            document.querySelectorAll('td[data-year]').forEach(cell => {
+                const year = parseInt(cell.getAttribute('data-year'));
+                if (!isNaN(year)) {
+                    const color = getYearColor(year);
+                    cell.style.backgroundColor = color;
+                    cell.style.color = 'black';
+                    cell.style.fontWeight = 'bold';
+                }
+            });
+            
+            // Couleurs pour les thèmes (Référence + Thème + Arguments étayés)
+            if (typeof THEME_COL_INDEX !== 'undefined' && THEME_COL_INDEX >= 0) {
+                document.querySelectorAll('#referencesTable tbody tr').forEach(row => {
+                    const themeCell = row.cells[THEME_COL_INDEX];
+                    if (!themeCell) return;
+                    const theme = themeCell.textContent.trim();
+                    if (theme && themeColors[theme]) {
+                        const colsToColor = [refColIndex, themeColIndex, argsColIndex].filter(idx => idx >= 0);
+                        colsToColor.forEach(idx => {
+                            const c = row.cells[idx];
+                            if (!c) return;
+                            c.style.backgroundColor = themeColors[theme];
+                            c.style.fontWeight = 'bold';
+                        });
+                    }
+                });
+            }
+        }
+        
+        // Événements
+        document.getElementById('themeFilter').addEventListener('change', filterTable);
+        document.getElementById('importanceFilter').addEventListener('input', filterTable);
+        document.getElementById('searchBox').addEventListener('input', filterTable);
+        
+        // Initialiser les statistiques et appliquer les couleurs
+        updateStats();
+        applyCellColors();
+    </script>
+</body>
+</html>

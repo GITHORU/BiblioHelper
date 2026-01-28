@@ -1,211 +1,125 @@
-# Extracteur de Références Bibliographiques
+# BiblioHelper – Extraction et fusion de références bibliographiques
 
-Script simple pour extraire les références bibliographiques d'un article scientifique PDF en utilisant Cursor CLI Agent.
+Petit outil pour extraire et consolider les références bibliographiques d’un manuscrit (ou d’articles) PDF en utilisant l’Agent Cursor, puis générer un tableau final en Markdown et HTML interactif.
+
+### Vue d’ensemble du pipeline
+
+1. **Découper le PDF long en chunks** (`split_pdf.py`)
+2. **Extraire les références de chaque chunk** (`extract_references.py`)
+3. **Fusionner et dédupliquer les références** (`merge_references.py`)
+4. (Optionnel) **Analyser l’usage des références dans le texte** (`analyze_references.py`)
+
+---
 
 ## Prérequis
 
-1. **Cursor CLI installé** :
-   
-   **Sur Linux/Mac :**
-   ```bash
-   curl https://cursor.com/install -fsS | bash
-   ```
-   
-   **Sur Windows :**
-   Cursor CLI nécessite WSL (Windows Subsystem for Linux). Installation :
-   
-   1. Ouvrir PowerShell en tant qu'administrateur
-   2. Exécuter : `wsl --install`
-   3. Redémarrer l'ordinateur
-   4. Dans le terminal WSL, exécuter :
-      ```bash
-      curl https://cursor.com/install -fsS | bash
-      ```
-   5. Vérifier l'installation : `agent --version`
-
-2. **Python 3** (pour le script Python) ou **Bash** (pour le script shell)
-
-3. **Dépendances Python** (pour la génération PDF) :
-   ```bash
-   pip install -r requirements.txt
-   ```
-   Ou simplement :
-   ```bash
-   pip install reportlab
-   ```
-
-## Installation
-
-### Installation rapide sur Windows
-
-1. **Installer WSL** (si pas déjà fait) :
-   ```powershell
-   # Ouvrir PowerShell en tant qu'administrateur
-   wsl --install
-   # Redémarrer l'ordinateur
-   ```
-
-2. **Installer Cursor CLI dans WSL** :
-   ```bash
-   # Ouvrir WSL
-   wsl
-   # Installer Cursor CLI
-   curl https://cursor.com/install -fsS | bash
-   # Vérifier l'installation
-   agent --version
-   ```
-
-3. **Utiliser les scripts** :
-   - Le script Python détecte automatiquement Windows et utilise WSL
-   - Ou utiliser le script PowerShell dédié : `extract_references_wsl.ps1`
-
-### Installation sur Linux/Mac
+- **Python 3.9+**
+- **Dépendances Python** installées avec :
 
 ```bash
-curl https://cursor.com/install -fsS | bash
-agent --version
+pip install -r requirements.txt
 ```
 
-## Utilisation
+- **Agent Cursor** disponible en ligne de commande (CLI ou intégration Cursor) – les scripts appellent l’agent via la commande retournée par `get_agent_base_cmd()` dans `extract_references.py`.
 
-### Script Python (recommandé - multiplateforme)
+---
+
+## 1. Découper un gros PDF en chunks – `split_pdf.py`
+
+But : créer des sous-PDF de taille raisonnable (ex. 20 pages) pour faciliter l’extraction.
 
 ```bash
-python extract_references.py <chemin_vers_pdf>
+python split_pdf.py \
+  --input "articles/exception/20250114_manuscrit_thèse_LENHOF.pdf" \
+  --output-dir "articles/20250114_manuscrit_thèse_LENHOF_chunks" \
+  --chunk-size 20
 ```
 
-Exemple:
-```bash
-python extract_references.py article.pdf
-```
+Sortie : des fichiers du type  
+`20250114_manuscrit_thèse_LENHOF_chunk_002_pages_21-40.pdf` dans le dossier `articles/..._chunks/`.
 
-### Script PowerShell (Windows avec WSL)
+---
 
-**Important :** Sur Windows, Cursor CLI nécessite WSL. Utilisez le script spécialisé :
+## 2. Extraire les références d’un PDF ou d’un chunk – `extract_references.py`
 
-```powershell
-.\extract_references_wsl.ps1 -PdfPath <chemin_vers_pdf>
-```
+But : pour chaque PDF (article isolé ou chunk de thèse), produire un **tableau Markdown** + éventuellement **HTML/PDF** avec les colonnes :
 
-Exemple:
-```powershell
-.\extract_references_wsl.ps1 -PdfPath article.pdf
-```
+- `Référence`
+- `Thème` (4–6 thèmes globaux pour tout le document)
+- `Arguments étayés`
+- `Note d'importance` (0–100)
+- `Année`
+- `Lien web`
 
-**Alternative :** Si vous avez WSL configuré, vous pouvez aussi utiliser directement le script bash dans WSL :
-```bash
-wsl
-./extract_references.sh /mnt/c/chemin/vers/article.pdf
-```
-
-### Script Bash (Linux/Mac)
+Usage typique sur un chunk :
 
 ```bash
-chmod +x extract_references.sh
-./extract_references.sh <chemin_vers_pdf>
+python extract_references.py \
+  --pdf "articles/20250114_manuscrit_thèse_LENHOF_chunks/20250114_manuscrit_thèse_LENHOF_chunk_002_pages_21-40.pdf"
 ```
 
-Exemple:
+Sorties (dans le même dossier que le PDF) :
+
+- `..._references.md` – tableau Markdown
+- `..._references.html` – tableau HTML interactif (si activé dans les options)
+- (éventuellement) `..._references.pdf` selon la configuration
+
+Tu peux boucler sur tous les chunks avec un petit script shell / PowerShell ou en les appelant un par un.
+
+---
+
+## 3. Fusionner toutes les références en un seul tableau – `merge_references.py`
+
+But : prendre **tous les fichiers `*_references.md` de chunks** et produire un **seul tableau consolidé** (Markdown + HTML) avec :
+
+- **Déduplication intelligente** : fusion des doublons basés sur auteurs + année (tolérant aux variantes de titre/format),
+- **Conservation stricte** : **aucune référence présente dans les tableaux d’entrée ne doit être supprimée** ; en cas de doute, les références restent séparées,
+- **Thèmes normalisés** : exactement **4 à 6 thèmes** globaux pour tout le tableau final,
+- Combinaison des « arguments étayés » et de la **note d’importance max** pour chaque référence fusionnée.
+
+Exemple d’appel (fusion de tous les `*_references.md` d’un dossier de chunks) :
+
 ```bash
-./extract_references.sh article.pdf
+python merge_references.py \
+  --input "articles/20250114_manuscrit_thèse_LENHOF_chunks/*.md"
 ```
 
-## Fonctionnement
+Sorties typiques dans le même dossier :
 
-Le script :
-1. Vérifie que le fichier PDF existe
-2. Envoie le PDF à l'agent Cursor avec le prompt spécialisé
-3. L'agent extrait les références bibliographiques et crée un tableau
-4. Affiche le résultat dans le terminal
-5. **Sauvegarde automatiquement le tableau dans un fichier Markdown** (`<nom_du_pdf>_references.md`)
+- `20250114_manuscrit_thèse_LENHOF_001_pages_1-20_references_merged.md`
+- `20250114_manuscrit_thèse_LENHOF_001_pages_1-20_references_merged.html`
 
-## Format de sortie
+Le HTML contient un tableau interactif (tri, filtres par thème, seuil de note, recherche texte, couleurs par thème, stats rapides, etc.).
 
-Le script génère automatiquement **deux fichiers** :
+---
 
-1. **Un fichier PDF** avec un tableau formaté contenant :
-- **Référence** : Les références bibliographiques complètes
-- **Thème** : Le thème principal de l'argument étayé. **Contrainte stricte** : L'agent doit utiliser exactement entre 4 et 6 thèmes différents maximum pour tout le document. Les références sont regroupées sous des thèmes larges et généraux (ex: "Méthodes GNSS-Acoustic", "Géodésie des fonds marins", "Optimisation et traitement de données", etc.)
-- **Arguments étayés** : Description précise des arguments étayés par chaque référence
-- **Note d'importance** : Un score de 0 à 100 indiquant l'importance de la référence pour l'article
-- **Année** : L'année de publication de la référence
-- **Lien web** : URL cliquable vers la page de l'article (trouvée dans le document ou recherchée sur internet)
+## Exemple de sortie HTML
 
-Le tableau est **automatiquement trié** :
-1. Par **thème** (regroupement par thème)
-2. Puis **chronologiquement** (année croissante) au sein de chaque thème
+Un exemple concret de fichier HTML généré par `extract_references.py` (pour un article isolé) est fourni dans le dépôt local :
 
-2. **Un fichier HTML interactif** avec un tableau triable et filtrable contenant :
-   - Toutes les mêmes colonnes que le PDF
-   - **Tri interactif** : Cliquez sur les en-têtes pour trier (Référence, Thème, Note d'importance, Année, Lien web)
-   - **Liens cliquables** : Les URLs dans la colonne "Lien web" sont cliquables et s'ouvrent dans un nouvel onglet
-   - **Filtres** :
-     - Filtre par thème (menu déroulant)
-     - Filtre par note d'importance minimale
-     - Recherche textuelle dans toutes les colonnes
-   - **Statistiques en temps réel** : Nombre total de références, références visibles, note moyenne
-   - **Couleurs par thème** : Même code couleur que le PDF
-   - **Légende des thèmes** : Affichage de tous les thèmes avec leurs couleurs
-   - **Design moderne** : Interface utilisateur élégante et responsive
+- `Xie et al. - 2023 - Shallow Water Seafloor Geodesy With Wave Glider-Ba_references.html`
 
-Les fichiers de sortie sont créés dans le même répertoire que le PDF d'entrée :
-- `<nom_du_pdf>_references.pdf` - Version PDF imprimable
-- `<nom_du_pdf>_references.html` - Version HTML interactive
-- `<nom_du_pdf>_references.ris` - **Export RIS pour Zotero** (importable directement)
-- `<nom_du_pdf>_references.bib` - **Export BibTeX pour Zotero** (importable directement)
+Ouvre-le dans ton navigateur pour voir à quoi ressemble le tableau interactif (tri par colonnes, filtres, couleurs par thème, etc.).
 
-**Import dans Zotero :**
+---
 
-**Méthode 1 - Format RIS (recommandé) :**
-1. Ouvrir Zotero
-2. Fichier → Importer...
-3. Choisir "Un fichier"
-4. Sélectionner le fichier `<nom_du_pdf>_references.ris`
-5. Les références seront importées avec leurs métadonnées
+## 4. Analyse avancée (optionnelle) – `analyze_references.py`
 
-**Méthode 2 - Format BibTeX :**
-1. Ouvrir Zotero
-2. Fichier → Importer...
-3. Choisir "Un fichier"
-4. Sélectionner le fichier `<nom_du_pdf>_references.bib`
-5. Les références seront importées avec leurs métadonnées
+Ce script est plus expérimental :
 
-**Métadonnées incluses :**
-- Auteurs (extraits de la référence)
-- Titre (extrait de la référence)
-- Année de publication
-- URL/Lien web (si disponible)
-- Thème (dans les notes personnalisées)
-- Arguments étayés (dans les notes personnalisées)
+- parcourt le texte d’un PDF de thèse,
+- détecte la section **BIBLIOGRAPHIE**,
+- reconstruit les références et essaie de :
+  - trouver où elles sont citées dans le texte,
+  - qualifier le type d’usage (méthode, cadre théorique, comparaison de résultats, etc.),
+  - attribuer une **note d’importance** en fonction du nombre et du contexte des citations.
 
-**Note :** Les formats RIS et BibTeX sont des standards universels, compatibles avec Zotero, Mendeley, EndNote, et la plupart des gestionnaires de références.
+Il peut être utilisé pour enrichir ou contrôler les notes/thèmes du tableau final.
 
-**Note :** Si `reportlab` n'est pas installé, le script sauvegardera automatiquement en format Markdown (`.md`) à la place, mais le HTML et les exports Zotero seront toujours générés.
+---
 
-## Prompt de l'agent
+## Remarques
 
-L'agent reçoit un prompt spécialisé qui spécifie :
-- Le format de sortie exact (tableau markdown avec 6 colonnes)
-- Les colonnes requises : "Référence", "Thème", "Arguments étayés", "Note d'importance" (0-100), "Année", "Lien web"
-- La recherche de liens web : L'agent doit chercher les URLs dans le document (DOI, URLs) ou les rechercher sur internet si absentes
-- L'identification du thème principal pour chaque référence
-- L'attribution d'une note d'importance entre 0 et 100
-- L'extraction de l'année de publication
-- L'obligation de ne répondre que par le tableau, sans texte supplémentaire
-- La nécessité de lister TOUTES les références bibliographiques du document
+- Les dossiers volumineux (`articles/`, `My Library/`) et l’environnement virtuel (`venv/`) sont **exclus du dépôt Git** via `.gitignore`.
+- Le projet est pensé pour être utilisé localement sur ta machine (avec tes propres PDFs) et pousser uniquement les **scripts** et la structure de pipeline sur GitHub (`GITHORU/BiblioHelper`).
 
-Le prompt est optimisé pour garantir un format de sortie stable et cohérent, permettant un tri automatique par thème puis chronologique.
-
-## Notes
-
-- La syntaxe exacte du CLI Cursor peut varier selon la version
-- Si une syntaxe ne fonctionne pas, le script essaiera d'autres variantes
-- Le résultat est affiché dans le terminal ET sauvegardé automatiquement dans plusieurs formats :
-  - **PDF** : Version imprimable avec liens cliquables
-  - **HTML** : Version interactive avec tri et filtres
-  - **RIS** : Format universel pour Zotero et autres gestionnaires de références
-  - **BibTeX** : Format standard pour LaTeX et Zotero
-- Le script utilise `--model auto` pour sélectionner automatiquement un modèle disponible
-- Le tableau est extrait automatiquement de la réponse et formaté dans tous les formats
-- Les exports Zotero incluent les métadonnées complètes (auteurs, titre, année, URL, thème et arguments étayés dans les notes)
-- Si `reportlab` n'est pas installé, le script sauvegardera en Markdown à la place, mais le HTML et les exports Zotero seront toujours générés
